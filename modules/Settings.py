@@ -84,3 +84,5 @@ ON_MENU_BUTTON_EXIT = pygame.event.Event(pygame.event.custom_type(),
                                          message="User did pressed EXIT button in menu")
 ON_MENU_BUTTON_RESTART = pygame.event.Event(pygame.event.custom_type(),
                                             message="User required restart")
+ON_MENU_BUTTON_NEXT_LEVEL = pygame.event.Event(pygame.event.custom_type(),
+                                            message="User required next level")

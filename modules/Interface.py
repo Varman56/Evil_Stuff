@@ -9,43 +9,50 @@ class GamePauseInterface:
         self.game = game
         self.menu_sprites_group = pygame.sprite.Group()
 
-        self.restart_button = Button('RESTART', ON_MENU_BUTTON_RESTART, self.game)
-        self.exit_button = Button("EXIT", ON_MENU_BUTTON_EXIT, self.game)
+        self.restart_button = Button(
+            'РЕСТАРТ', ON_MENU_BUTTON_RESTART, self.game)
+        self.exit_button = Button("ВЫХОД", ON_MENU_BUTTON_EXIT, self.game)
+        self.next_level = Button('ПРОПУСК УРОВНЯ', ON_MENU_BUTTON_NEXT_LEVEL, self.game)
+        
 
         self.initUi()
 
     def initUi(self):
-        self.restart_button.size = (560, 80)
-        self.restart_button.move_bc(HALF_WIDTH, HALF_HEIGHT)
+        self.restart_button.move_bc(HALF_WIDTH, HALF_HEIGHT - 100)
         self.restart_button.color = RED
         self.restart_button.background_color = DARKGRAY
-        self.exit_button.size = (300, 80)
-        self.exit_button.move_bc(HALF_WIDTH, HALF_HEIGHT + 150)
+        self.exit_button.move_bc(HALF_WIDTH, HALF_HEIGHT + 200)
         self.exit_button.color = RED
         self.exit_button.background_color = DARKGRAY
+        self.next_level.move_bc(HALF_WIDTH, HALF_HEIGHT + 50)
+        self.next_level.color = RED
+        self.next_level.background_color = DARKGRAY
 
     def render(self):
-        pause_text = self.game.font.render('PAUSE', 1, RED)
-        self.game.screen.blit(pause_text, (
-            HALF_WIDTH - pause_text.get_width() // 2, HALF_HEIGHT - pause_text.get_height() - 200))
+        self.game.screen.blit(self.game.contols_picture, (0, 0),
+                              (0, 0, WIDTH, HEIGHT))
+        pause_text = self.game.font.render('ПАУЗА', 1, RED)
+        self.game.screen.blit(pause_text, (HALF_WIDTH - pause_text.get_width() // 2, HALF_HEIGHT - pause_text.get_height() - 300))
         self.restart_button.draw()
         self.exit_button.draw()
+        self.next_level.draw()
 
 
 class WinInterface:
     def __init__(self, game):
         self.game = game
 
-        self.start_button = Button("RESTART", ON_MENU_BUTTON_RESTART, self.game)
-        self.exit_button = Button("EXIT", ON_MENU_BUTTON_EXIT, self.game)
+        self.start_button = Button(
+            "РЕСТАРТ", ON_MENU_BUTTON_RESTART, self.game)
+        self.exit_button = Button("ВЫХОД", ON_MENU_BUTTON_EXIT, self.game)
 
         self.initUi()
 
     def initUi(self):
-        self.start_button.width += 150
         self.start_button.move_bc(10 + (self.start_button.width // 2), HALF_HEIGHT)
         self.start_button.color = MENU_BUTTON_START_COLOR
-        self.exit_button.move_bc(10 + (self.exit_button.width // 2), HALF_HEIGHT + 150)
+        self.exit_button.move_bc(
+            10 + (self.exit_button.width // 2), HALF_HEIGHT + 150)
         self.exit_button.color = MENU_BUTTON_EXIT_COLOR
 
     def render(self):
@@ -67,8 +74,8 @@ class MenuInterface:
     def __init__(self, game):
         self.game = game
 
-        self.start_button = Button("START", ON_MENU_BUTTON_START, self.game)
-        self.exit_button = Button("EXIT", ON_MENU_BUTTON_EXIT, self.game)
+        self.start_button = Button("НАЧАТЬ", ON_MENU_BUTTON_START, self.game)
+        self.exit_button = Button("ВЫХОД", ON_MENU_BUTTON_EXIT, self.game)
 
         self.initUi()
 
@@ -96,18 +103,17 @@ class MenuInterface:
 class GameOverInterface:
     def __init__(self, game):
         self.game = game
-        self.restart_button = Button("RESTART", ON_MENU_BUTTON_RESTART, self.game)
-        self.exit_button = Button("EXIT", ON_MENU_BUTTON_EXIT, self.game)
+        self.restart_button = Button(
+            "РЕСТАРТ", ON_MENU_BUTTON_RESTART, self.game)
+        self.exit_button = Button("ВЫХОД", ON_MENU_BUTTON_EXIT, self.game)
         self.title = self.game.font.render("GAME OVER", 1, YELLOW)
 
         self.initUi()
 
     def initUi(self):
-        self.restart_button.size = 560, 80
         self.restart_button.move_bc(HALF_WIDTH, HALF_HEIGHT)
         self.restart_button.color = RED
         self.restart_button.background_color = YELLOW
-        self.exit_button.size = 560, 80
         self.exit_button.move_bc(HALF_WIDTH, HALF_HEIGHT + 150)
         self.exit_button.color = RED
         self.exit_button.background_color = YELLOW
@@ -126,12 +132,15 @@ class PlayerInterface:
     def render(self):
         ammo_text = self.game.font_mini.render(
             str(self.game.player.weapon.ammo) + " | " + str(self.game.player.weapon.max_ammo), 1, WHITE)
-        self.game.screen.blit(ammo_text, (WIDTH - ammo_text.get_width(), ammo_text.get_height()))
+        self.game.screen.blit(
+            ammo_text, (WIDTH - ammo_text.get_width(), ammo_text.get_height()))
         self.game.drawer.interface(self.game.player)
 
     def render_crosshair(self):
-        pygame.draw.line(self.game.screen, RED, (HALF_WIDTH - 5, HALF_HEIGHT), (HALF_WIDTH + 5, HALF_HEIGHT), 2)
-        pygame.draw.line(self.game.screen, RED, (HALF_WIDTH, HALF_HEIGHT - 5), (HALF_WIDTH, HALF_HEIGHT + 5), 2)
+        pygame.draw.line(self.game.screen, RED, (HALF_WIDTH - 5,
+                         HALF_HEIGHT), (HALF_WIDTH + 5, HALF_HEIGHT), 2)
+        pygame.draw.line(self.game.screen, RED, (HALF_WIDTH,
+                         HALF_HEIGHT - 5), (HALF_WIDTH, HALF_HEIGHT + 5), 2)
 
 
 class LabirintInterface:
@@ -161,3 +170,16 @@ class PlanetLevelInterface:
 
     def render(self):
         self.game.player_interface.render_crosshair()
+
+
+class Tips:
+    def __init__(self, game):
+        self.game = game
+
+    def render(self):
+        if self.game.render_tips:
+            for tip in range(len(self.game.current_level.tips)):
+                text = self.game.font_mini.render(
+                    self.game.current_level.tips[tip], 1, WHITE)
+                self.game.screen.blit(
+                    text, (HALF_WIDTH - text.get_width() // 2, 100 + tip * 50))

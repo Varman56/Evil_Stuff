@@ -25,7 +25,8 @@ class Player:
         self.angle = PLAYER_ANGLE
 
         self.can_run = True
-        self.notes = [x for x in self.game.sprites.objects_list if x.flag == "note"]
+        self.notes = [
+            x for x in self.game.sprites.objects_list if x.flag == "note"]
         self.current_notes = []
         self.notes_sprite_group = pygame.sprite.Group()
 
@@ -115,7 +116,7 @@ class Player:
         self.angle %= DOUBLE_PI
 
         if PORTAL_COORDS[0] - 50 < self.x < PORTAL_COORDS[0] + 50 and PORTAL_COORDS[1] - 50 < self.y < PORTAL_COORDS[
-            1] + 50 and self.game.portal_open:
+                1] + 50 and self.game.portal_open:
             self.game.portal_open = False
             self.game.set_level(self.game.planet_level)
 
@@ -151,6 +152,10 @@ class Player:
         else:
             self.player_speed = PLAYER_SPEED
             self.set_stamina(self.stamina + 0.5)
+        if keys[pygame.K_TAB]:
+            self.game.render_tips = True
+        else:
+            self.game.render_tips = False
 
     def mouse_control(self):
         if pygame.mouse.get_focused():

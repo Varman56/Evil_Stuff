@@ -26,9 +26,13 @@ class Game:
         self.win_picture = pygame.image.load('data/textures/win.png')
         self.win_picture = pygame.transform.scale(self.win_picture,
                                                    (WIDTH, HEIGHT))
+        self.contols_picture = pygame.image.load('data/textures/controls.png')
+        self.contols_picture = pygame.transform.scale(self.contols_picture,
+                                                   (WIDTH, HEIGHT))
 
         self.portal_open = False
         self.pause = False
+        self.render_tips = False
 
         # Init interfaces
         self.labirint_interface = LabirintInterface(self)
@@ -38,6 +42,7 @@ class Game:
         self.planet_interface = PlanetLevelInterface(self)
         self.player_interface = PlayerInterface(self)
         self.win_interface = WinInterface(self)
+        self.tips_interface = Tips(self)
 
         # Init levels
         self.menu = Menu(self)
@@ -92,6 +97,7 @@ class Level:
         self.game = game
         self.can_pause = False
         self.level_name = None
+        self.tips = []
 
     def update(self):
         self.check_events()
@@ -105,6 +111,15 @@ class Level:
                 self.game.set_level(self.game.labirint_level)
             elif event.type == ON_MENU_BUTTON_RESTART.type:
                 self.game.restart()
+            elif event.type == ON_MENU_BUTTON_NEXT_LEVEL.type:
+                if self.game.current_level.level_name == 'first_lvl':
+                    self.game.set_level(self.game.planet_level)
+                elif self.game.current_level.level_name == 'second_lvl':
+                    self.game.set_level(self.game.final_level)
+                elif self.game.current_level.level_name == 'third_lvl':
+                    self.game.set_level(self.game.win_level)
+                self.game.pause = False
+                pygame.event.clear()
 
             if self.game.current_level.can_pause:
                 if event.type == pygame.KEYUP:
@@ -190,6 +205,10 @@ class FinalLevel(Level):
         super().__init__(game)
         self.can_pause = True
         self.level_name = "third_lvl"
+        self.tips = [
+            'Уничтожьте всех врагов',
+            'Уничтожьте главного монстра',
+        ]
 
     def init_level(self):
         self.game.player.x = PLAYER_SPAWN_POS[0]
@@ -227,7 +246,7 @@ class FinalLevel(Level):
             return
         # self.game.drawer.fps(self.game.clock)
         self.game.planet_interface.render()
-        self.game.player_interface.render()
+        self.game.tips_interface.render()
         self.game.player.weapon.render([wall_shot, self.game.sprites.sprite_shot])
         if self.game.pause:
             self.game.pause_interface.render()
@@ -238,6 +257,9 @@ class PlanetLevel(Level):
         super().__init__(game)
         self.can_pause = True
         self.level_name = "second_lvl"
+        self.tips = [
+            'Уничьтожьте всех врагов',
+        ]
 
     def init_level(self):
         self.game.player.x = PLAYER_SPAWN_POS[0]
@@ -276,6 +298,7 @@ class PlanetLevel(Level):
         self.game.planet_interface.render()
         self.game.player_interface.render()
         self.game.player.weapon.render([wall_shot, self.game.sprites.sprite_shot])
+        self.game.tips_interface.render()
         if self.game.pause:
             self.game.pause_interface.render()
         # print([i.is_dead for i in self.game.sprites.objects_list])
@@ -290,6 +313,11 @@ class Labirint(Level):
         super().__init__(game)
         self.can_pause = True
         self.level_name = "first_lvl"
+        self.tips = [
+            'Соберите все записки',
+            'Найдите выход',
+            'Не дайте монстру убить себя',
+        ]
 
     def init_level(self):
         self.game.player.x = PLAYER_SPAWN_POS[0]
@@ -300,96 +328,20 @@ class Labirint(Level):
         pygame.mixer.music.play(-1)
         self.game.sprites.note_coords = sample(self.game.world.notes_spawn, 8)
         coords = sample(self.game.world.notes_spawn, 8)
-        self.game.sprites.objects_list = [
-            Slender(self.game.sprites.sprite_parametrs['sprite_slender'], (58.5, 38.5),
-                    self.game),
+        self.game.sprites.objects_list = []
+        self.game.sprites.objects_list.append(Slender(self.game.sprites.sprite_parametrs['sprite_slender'], (58.5, 38.5), self.game))
+        for i in range(8):
+            self.game.sprites.objects_list.append(
             Note(self.game.sprites.sprite_parametrs['sprite_note'],
-                 (coords[0][0] + 0.98, coords[0][1] + 0.5),
+                 (coords[i][0] + 0.98, coords[i][1] + 0.5),
                  [pygame.image.load(
-                     f'data/sprites/note/1.png').convert_alpha(),
+                     f'data/sprites/note/{i + 1}.png').convert_alpha(),
                   pygame.image.load(
-                      f"data/sprites/note/angled.png").convert_alpha()], "1",
+                      f"data/sprites/note/angled.png").convert_alpha()], f"{i + 1}",
                  NoteIcon(pygame.image.load(
-                     f"data/sprites/note/icons/1.png").convert_alpha(),
+                     f"data/sprites/note/icons/{i + 1}.png").convert_alpha(),
                           pygame.image.load(
-                              f"data/sprites/note/icons/1_unfound.png").convert_alpha())),
-            Note(self.game.sprites.sprite_parametrs['sprite_note'],
-                 (coords[1][0] + 0.98, coords[1][1] + 0.5),
-                 [pygame.image.load(
-                     f'data/sprites/note/2.png').convert_alpha(),
-                  pygame.image.load(
-                      f"data/sprites/note/angled.png").convert_alpha()], "2",
-                 NoteIcon(pygame.image.load(
-                     f"data/sprites/note/icons/2.png").convert_alpha(),
-                          pygame.image.load(
-                              f"data/sprites/note/icons/2_unfound.png").convert_alpha())
-                 ),
-            Note(self.game.sprites.sprite_parametrs['sprite_note'],
-                 (coords[2][0] + 0.98, coords[2][1] + 0.5),
-                 [pygame.image.load(
-                     f'data/sprites/note/3.png').convert_alpha(),
-                  pygame.image.load(
-                      f"data/sprites/note/angled.png").convert_alpha()], "3",
-                 NoteIcon(pygame.image.load(
-                     f"data/sprites/note/icons/3.png").convert_alpha(),
-                          pygame.image.load(
-                              f"data/sprites/note/icons/3_unfound.png").convert_alpha())
-                 ),
-            Note(self.game.sprites.sprite_parametrs['sprite_note'],
-                 (coords[3][0] + 0.98, coords[3][1] + 0.5), [pygame.image.load(
-                    f'data/sprites/note/4.png').convert_alpha(),
-                                                             pygame.image.load(
-                                                                 f"data/sprites/note/angled.png").convert_alpha()],
-                 "4",
-                 NoteIcon(pygame.image.load(
-                     f"data/sprites/note/icons/4.png").convert_alpha(),
-                          pygame.image.load(
-                              f"data/sprites/note/icons/4_unfound.png").convert_alpha())),
-            Note(self.game.sprites.sprite_parametrs['sprite_note'],
-                 (coords[4][0] + 0.98, coords[4][1] + 0.5),
-                 [pygame.image.load(
-                     f'data/sprites/note/5.png').convert_alpha(),
-                  pygame.image.load(
-                      f"data/sprites/note/angled.png").convert_alpha()], "5",
-                 NoteIcon(pygame.image.load(
-                     f"data/sprites/note/icons/5.png").convert_alpha(),
-                          pygame.image.load(
-                              f"data/sprites/note/icons/5_unfound.png").convert_alpha())
-                 ),
-            Note(self.game.sprites.sprite_parametrs['sprite_note'],
-                 (coords[5][0] + 0.98, coords[5][1] + 0.5),
-                 [pygame.image.load(
-                     f'data/sprites/note/6.png').convert_alpha(),
-                  pygame.image.load(
-                      f"data/sprites/note/angled.png").convert_alpha()], "6",
-                 NoteIcon(pygame.image.load(
-                     f"data/sprites/note/icons/6.png").convert_alpha(),
-                          pygame.image.load(
-                              f"data/sprites/note/icons/6_unfound.png").convert_alpha())
-                 ),
-            Note(self.game.sprites.sprite_parametrs['sprite_note'],
-                 (coords[6][0] + 0.98, coords[6][1] + 0.5),
-                 [pygame.image.load(
-                     f'data/sprites/note/7.png').convert_alpha(),
-                  pygame.image.load(
-                      f"data/sprites/note/angled.png").convert_alpha()], "7",
-                 NoteIcon(pygame.image.load(
-                     f"data/sprites/note/icons/7.png").convert_alpha(),
-                          pygame.image.load(
-                              f"data/sprites/note/icons/7_unfound.png").convert_alpha())
-                 ),
-            Note(self.game.sprites.sprite_parametrs['sprite_note'],
-                 (coords[7][0] + 0.98, coords[7][1] + 0.5),
-                 [pygame.image.load(
-                     f'data/sprites/note/8.png').convert_alpha(),
-                  pygame.image.load(
-                      f"data/sprites/note/angled.png").convert_alpha()], "8",
-                 NoteIcon(pygame.image.load(
-                     f"data/sprites/note/icons/8.png").convert_alpha(),
-                          pygame.image.load(
-                              f"data/sprites/note/icons/8_unfound.png").convert_alpha())
-                 ),
-        ]
+                              f"data/sprites/note/icons/{i + 1}_unfound.png").convert_alpha())))
         self.game.labirint_interface.update_notes_list()
 
     def update(self):
@@ -404,5 +356,6 @@ class Labirint(Level):
         # self.game.drawer.fps(self.game.clock)
         self.game.labirint_interface.render()
         self.game.drawer.interface(self.game.player)
+        self.game.tips_interface.render()
         if self.game.pause:
             self.game.pause_interface.render()
