@@ -3,6 +3,7 @@ from modules.Sprites import *
 from modules.Drawer import Drawer, ray_casting_walls
 from modules.Interface import *
 from modules.World import World
+from modules.CutScene import *
 from random import sample
 import pygame
 
@@ -17,6 +18,7 @@ class Game:
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font('data/fonts/pixels.otf', 72)
         self.font_mini = pygame.font.Font('data/fonts/pixels.otf', 18)
+        self.bad_script = pygame.font.Font('data/fonts/bad-script.ttf', 32)
         self.sprites = Sprites(self)
         self.drawer = Drawer(self)
         self.player = Player(self)
@@ -28,7 +30,7 @@ class Game:
                                                    (WIDTH, HEIGHT))
         self.contols_picture = pygame.image.load('data/textures/controls.png')
         self.contols_picture = pygame.transform.scale(self.contols_picture,
-                                                   (WIDTH, HEIGHT))
+                                                   (WIDTH // 4, HEIGHT // 4))
 
         self.portal_open = False
         self.pause = False
@@ -39,7 +41,7 @@ class Game:
         self.pause_interface = GamePauseInterface(self)
         self.menu_interface = MenuInterface(self)
         self.game_over_interface = GameOverInterface(self)
-        self.planet_interface = PlanetLevelInterface(self)
+        self.levels_interface = LevelsInterface(self)
         self.player_interface = PlayerInterface(self)
         self.win_interface = WinInterface(self)
         self.tips_interface = Tips(self)
@@ -99,11 +101,19 @@ class Level:
         self.level_name = None
         self.tips = []
 
-    def update(self):
-        self.check_events()
+    def update(self, cutscene = None):
+        self.check_events(cutscene = cutscene)
         self.game.screen.fill(BLACK)
+        if cutscene and not cutscene.is_closed:
+            self.game.pause = True
+            self.game.current_level.can_pause = False
+            cutscene.render()
+            return False
+        self.game.current_level.can_pause = True
+        return True
+        
 
-    def check_events(self):
+    def check_events(self, cutscene = None):
         for event in pygame.event.get():
             if event.type == pygame.QUIT or event.type == ON_MENU_BUTTON_EXIT.type:
                 self.game.terminate()
@@ -120,6 +130,11 @@ class Level:
                     self.game.set_level(self.game.win_level)
                 self.game.pause = False
                 pygame.event.clear()
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_SPACE:
+                    if cutscene:
+                        cutscene.is_closed = True
+                        self.game.pause = False
 
             if self.game.current_level.can_pause:
                 if event.type == pygame.KEYUP:
@@ -211,6 +226,9 @@ class FinalLevel(Level):
         ]
 
     def init_level(self):
+        text = 'Уничтожив преследователей, вы решили не останавливаться на достигнутом и отправились на поиски преследователя.\n' \
+        'Вскоре вы пришли во вторую часть парка, где встретились со злом лицом к лицу...'
+        self.cutscene = CutScene(text, self.game)
         self.game.player.x = PLAYER_SPAWN_POS[0]
         self.game.player.y = PLAYER_SPAWN_POS[1]
         self.game.player.angle = PLAYER_ANGLE
@@ -222,12 +240,16 @@ class FinalLevel(Level):
         self.game.sprites.objects_list = [Slender(self.game.sprites.sprite_parametrs['sprite_slender'], (29.5, 20.5),
                                                   self.game)]
         spawn_coords = list(self.game.world.conj_dict.keys())
+        coords = sample(self.game.world.notes_spawn, 3)
+        spawn_aid_kit(self.game, coords)
         for i in sample(spawn_coords, 20):
             self.game.sprites.objects_list.append(
                 Skeleton(self.game.sprites.sprite_parametrs['sprite_skeleton'], (i[0] + 0.5, i[1] + 0.5), self.game))
 
     def update(self):
-        super().update()
+        cutscene_ended = super().update(cutscene = self.cutscene)
+        if not cutscene_ended:
+            return
         if not self.game.pause:
             self.game.player.movement()
             for i in range(len(self.game.sprites.objects_list)):
@@ -245,7 +267,8 @@ class FinalLevel(Level):
             self.game.set_level(self.game.win_level)
             return
         # self.game.drawer.fps(self.game.clock)
-        self.game.planet_interface.render()
+        self.game.levels_interface.render()
+        self.game.player_interface.render()
         self.game.tips_interface.render()
         self.game.player.weapon.render([wall_shot, self.game.sprites.sprite_shot])
         if self.game.pause:
@@ -262,6 +285,9 @@ class PlanetLevel(Level):
         ]
 
     def init_level(self):
+        text = 'Вы смогли сбежать от монстра, однако вас настигли его преспешники.\n' \
+       'Во время телепортации у вас в руках оказался дробовик. Вы решили не задавать лишних вопросов и действовать!'
+        self.cutscene = CutScene(text, self.game)
         self.game.player.x = PLAYER_SPAWN_POS[0]
         self.game.player.y = PLAYER_SPAWN_POS[1]
         self.game.player.angle = PLAYER_ANGLE
@@ -271,12 +297,16 @@ class PlanetLevel(Level):
         pygame.mixer.music.play(-1)
         self.game.sprites.objects_list.clear()
         spawn_coords = list(self.game.world.conj_dict.keys())
+        coords = sample(self.game.world.notes_spawn, 3)
+        spawn_aid_kit(self.game, coords)
         for i in sample(spawn_coords, 30):
             self.game.sprites.objects_list.append(
                 Skeleton(self.game.sprites.sprite_parametrs['sprite_skeleton'], (i[0] + 0.5, i[1] + 0.5), self.game))
 
     def update(self):
-        super().update()
+        cutscene_ended = super().update(cutscene = self.cutscene)
+        if not cutscene_ended:
+            return
         if not self.game.pause:
             self.game.player.movement()
             for i in range(len(self.game.sprites.objects_list)):
@@ -295,7 +325,7 @@ class PlanetLevel(Level):
             self.game.set_level(self.game.final_level)
             return
         # self.game.drawer.fps(self.game.clock)
-        self.game.planet_interface.render()
+        self.game.levels_interface.render()
         self.game.player_interface.render()
         self.game.player.weapon.render([wall_shot, self.game.sprites.sprite_shot])
         self.game.tips_interface.render()
@@ -316,18 +346,22 @@ class Labirint(Level):
         self.tips = [
             'Соберите все записки',
             'Найдите выход',
-            'Не дайте монстру убить себя',
+            'Не дайте монстру убить вас',
         ]
-
+        
     def init_level(self):
+        text = 'Ваша машина неожиданно заглохла. Вы проверили всё что могли, но не нашли проблемы.\n' \
+        'Отчаявшись, вы отправились в сторону дома, через ближайший парк. Неожиданно за вашей спиной появился забор.\n' \
+        'Решительным шагом вы направились в глубину парка, со странной мыслью о сборе записок...'
+        self.cutscene = CutScene(text, self.game)
         self.game.player.x = PLAYER_SPAWN_POS[0]
         self.game.player.y = PLAYER_SPAWN_POS[1]
         self.game.player.angle = PLAYER_ANGLE
         pygame.mouse.set_visible(False)
         pygame.mixer.music.load('data/music/gameplay_music.mp3')
         pygame.mixer.music.play(-1)
-        self.game.sprites.note_coords = sample(self.game.world.notes_spawn, 8)
-        coords = sample(self.game.world.notes_spawn, 8)
+        # self.game.sprites.note_coords = sample(self.game.world.notes_spawn, 11)
+        coords = sample(self.game.world.notes_spawn, 11)
         self.game.sprites.objects_list = []
         self.game.sprites.objects_list.append(Slender(self.game.sprites.sprite_parametrs['sprite_slender'], (58.5, 38.5), self.game))
         for i in range(8):
@@ -342,11 +376,14 @@ class Labirint(Level):
                      f"data/sprites/note/icons/{i + 1}.png").convert_alpha(),
                           pygame.image.load(
                               f"data/sprites/note/icons/{i + 1}_unfound.png").convert_alpha())))
+        spawn_aid_kit(self.game, coords[::-1])
         self.game.labirint_interface.update_notes_list()
 
     def update(self):
-        super().update()
-        if not self.game.pause:
+        cutscene_ended = super().update(cutscene = self.cutscene)
+        if not cutscene_ended:
+            return
+        if not self.game.pause and self.game.current_level == self.game.labirint_level:
             self.game.player.movement()
             self.game.sprites.objects_list[0].update(self.game.player)
         self.game.drawer.background(self.game.player.ang)
@@ -359,3 +396,10 @@ class Labirint(Level):
         self.game.tips_interface.render()
         if self.game.pause:
             self.game.pause_interface.render()
+
+
+def spawn_aid_kit(game, coords):
+    for i in range(3):
+        game.sprites.objects_list.append(
+            AidKit(game.sprites.sprite_parametrs['sprite_aid'],
+                 (coords[i][0] + 0.98, coords[i][1] + 0.5)))

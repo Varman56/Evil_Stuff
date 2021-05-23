@@ -55,6 +55,26 @@ class Sprites:
                 'flag': 'note',
                 'obj_action': deque()
             },
+            'sprite_aid': {
+                'sprite': [pygame.image.load(
+                    f'data/sprites/aid/first_aid_kit.png').convert_alpha(),
+                            pygame.image.load(f"data/sprites/aid/angled_0.png").convert_alpha(), 
+                            pygame.image.load(f"data/sprites/aid/angled_1.png").convert_alpha()],
+                'viewing_angles': True,
+                'shift': 0,
+                'scale': (0.2, 0.2),
+                'side': 25,
+                'animation': deque(),
+                'death_animation': [],
+                'is_dead': None,
+                'dead_shift': None,
+                'animation_dist': 50,
+                'animation_speed': 8,
+                'blocked': True,
+                'is_trigger': True,
+                'flag': 'aid',
+                'obj_action': deque()
+            },
             'sprite_skeleton': {'sprite': [pygame.image.load(
                 f'data/sprites/skeleton/idle/1.png').convert_alpha() for i
                                            in
@@ -82,7 +102,7 @@ class Sprites:
 
                                 }
         }
-        self.note_coords = sample(self.game.world.notes_spawn, 8)
+        # self.note_coords = sample(self.game.world.notes_spawn, 8)
         self.objects_list = []
 
     @property
@@ -279,7 +299,18 @@ class Note(SpriteObject):
                 range(1, 45))] + [frozenset(range(46, 325))]
             self.sprite_positions = {angle: pos for angle, pos in
                                      zip(self.sprite_angles, self.object)}
+class AidKit(SpriteObject):
+    def __init__(self, parameters, pos):
+        super().__init__(parameters, pos)
+        self.capture_sound = pygame.mixer.Sound('data/sprites/aid/sounds/aid.mp3')
 
+        if self.viewing_angles:
+            self.sprite_angles = [frozenset(range(325, 361)) | frozenset(range(1, 45))] + [frozenset(range(185, 325))] + [frozenset(range(45, 185))]
+            self.sprite_positions = {angle: pos for angle, pos in
+                                     zip(self.sprite_angles, self.object)}
+    
+    def update(self, *args, **kwargs):
+        pass
 
 class Skeleton(SpriteObject):
     def __init__(self, parameters, pos, game):

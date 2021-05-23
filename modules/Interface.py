@@ -29,8 +29,7 @@ class GamePauseInterface:
         self.next_level.background_color = DARKGRAY
 
     def render(self):
-        self.game.screen.blit(self.game.contols_picture, (0, 0),
-                              (0, 0, WIDTH, HEIGHT))
+        self.game.screen.blit(self.game.contols_picture, (WIDTH - self.game.contols_picture.get_width(), HEIGHT - self.game.contols_picture.get_height()))
         pause_text = self.game.font.render('ПАУЗА', 1, RED)
         self.game.screen.blit(pause_text, (HALF_WIDTH - pause_text.get_width() // 2, HALF_HEIGHT - pause_text.get_height() - 300))
         self.restart_button.draw()
@@ -98,7 +97,9 @@ class MenuInterface:
         label = self.game.font.render('Evill Stuff', 1, MENU_TITLE_COLOR)
         self.game.screen.blit(label, (
             WIDTH // 2 - label.get_width() // 2, HEIGHT // 2 - 200))
-
+        
+        # Управление
+        self.game.screen.blit(self.game.contols_picture, (WIDTH - self.game.contols_picture.get_width(), HEIGHT - self.game.contols_picture.get_height()))
 
 class GameOverInterface:
     def __init__(self, game):
@@ -163,8 +164,7 @@ class LabirintInterface:
         noteicons_group.draw(self.game.screen)
         noteicons_group.update()
 
-
-class PlanetLevelInterface:
+class LevelsInterface:
     def __init__(self, game):
         self.game = game
 

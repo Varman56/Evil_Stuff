@@ -52,6 +52,12 @@ class Drawer:
         for x, y in self.game.world.mini_map:
             pygame.draw.rect(self.game.screen_minimap, GREEN,
                              (x, y, MAP_TILE, MAP_TILE))
+        
+        for a in sprites.objects_list:
+            if a.flag == 'aid':
+                x, y = a.pos
+                pygame.draw.rect(self.game.screen_minimap, RED, (x // MAP_SCALE, y // MAP_SCALE, a.side // MAP_SCALE, a.side // MAP_SCALE))
+
         if flag:
             for a in sprites.objects_list:
                 if a.flag != 'npc' or a.is_dead:
