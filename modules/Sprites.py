@@ -6,6 +6,7 @@ from random import sample, randint
 
 
 class Sprites:
+    """Базовый класс спрайтов. Содержит словари со свойствами объектов."""
     def __init__(self, game):
         self.game = game
         self.sprite_parametrs = {
@@ -102,21 +103,19 @@ class Sprites:
 
                                 }
         }
-        # self.note_coords = sample(self.game.world.notes_spawn, 8)
         self.objects_list = []
 
     @property
     def sprite_shot(self):
+        """Проверка на соприкосновение выстрела и спрайта."""
         return min([obj.is_on_fire for obj in self.objects_list])
 
     def destroy_all(self):
+        """Удаление всех спрайтов"""
         self.objects_list.clear()
 
-
-#  def destoy_one(self, ind):
-#     del self.objects_list[ind]
-
 class SpriteObject():
+    """"""
     def __init__(self, parameters, pos):
         self.object = parameters['sprite'].copy()
         self.viewing_angles = parameters['viewing_angles']

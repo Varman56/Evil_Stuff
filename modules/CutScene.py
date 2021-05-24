@@ -1,7 +1,7 @@
-from os import close
 from modules.Settings import *
 
 class CutScene:
+    """Реализует экран перехода на уровень. Объект класса необходимо создавать в иницилизации уровня."""
     def __init__(self, text, game):
         self.text = text
         self.printed_text = ['']
@@ -15,7 +15,7 @@ class CutScene:
         self.close_duration = 200
 
     def update(self):
-        # Добавление буквы
+        """Функция обновляет переменные кат-сцены."""
         if self.time_to_next_print <= 0 and not self.finished:
             sybmol = self.text[self.current_index]
             if sybmol == '\n':
@@ -36,6 +36,7 @@ class CutScene:
             self.game.pause = False
 
     def render(self):
+        """Функция отрисовывает элементы кат-сцены."""
         for i in range(len(self.printed_text)):
             label = self.game.bad_script.render(self.printed_text[i], 1, WHITE)
             self.game.screen.blit(label, (WIDTH // 2 - label.get_width() // 2, (HEIGHT // 2 - label.get_height() - 100) + 50 * i))

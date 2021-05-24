@@ -9,6 +9,7 @@ import pygame
 
 
 class Game:
+    """Основной класс игры. Объединяет в себе почти все остальные классы"""
     def __init__(self):
         self.running = True
 
@@ -63,6 +64,7 @@ class Game:
         pygame.mixer.music.set_volume(0.1)
 
     def set_level(self, level):
+        """Инициализация необходимого уровня"""
         self.current_level = level
         if self.current_level.level_name is not None:
             self.world = World(
@@ -70,9 +72,7 @@ class Game:
         self.current_level.init_level()
 
     def restart(self):
-        # self.player.x = PLAYER_SPAWN_POS[0]
-        # self.player.y = PLAYER_SPAWN_POS[1]
-        # self.player.angle = PLAYER_ANGLE
+        """Логика кнопки рестарт. Возвращает игру в стартовое состояние."""
         self.player.set_health(100)
         self.player.set_stamina(100)
         self.sprites = Sprites(self)
@@ -86,15 +86,18 @@ class Game:
         self.pause = False
 
     def game_loop(self):
+        """Основной игровой цикл"""
         self.current_level.update()
         self.clock.tick(FPS)
         pygame.display.flip()
 
     def terminate(self):
+        """Функция выхода из игры"""
         self.running = False
 
 
 class Level:
+    """Базый класс, для реализации уровня в игре."""
     def __init__(self, game):
         self.game = game
         self.can_pause = False
@@ -102,6 +105,7 @@ class Level:
         self.tips = []
 
     def update(self, cutscene = None):
+        """Обновляет данные уровня каждый кадр. Можно переопределить или расширить."""
         self.check_events(cutscene = cutscene)
         self.game.screen.fill(BLACK)
         if cutscene and not cutscene.is_closed:
@@ -112,8 +116,15 @@ class Level:
         self.game.current_level.can_pause = True
         return True
         
+    def spawn_aid_kit(self, coords):
+        """Добавление на уровни аптечек"""
+        for i in range(3):
+            self.game.sprites.objects_list.append(
+                AidKit(self.game.sprites.sprite_parametrs['sprite_aid'],
+                    (coords[i][0] + 0.98, coords[i][1] + 0.5)))
 
     def check_events(self, cutscene = None):
+        """Метод улавливает события в игре и распределяе логику. Не переопределяется при наследовании."""
         for event in pygame.event.get():
             if event.type == pygame.QUIT or event.type == ON_MENU_BUTTON_EXIT.type:
                 self.game.terminate()
@@ -168,6 +179,7 @@ class Level:
 
 
 class Menu(Level):
+    """Наследованный от класса Level. Стартовое меню игрока."""
     def __init__(self, game):
         super().__init__(game)
 
@@ -181,6 +193,7 @@ class Menu(Level):
 
 
 class Loose(Level):
+    """Наследованный от класса Level. Экран поражения."""
     def __init__(self, game):
         super().__init__(game)
 
@@ -198,6 +211,7 @@ class Loose(Level):
 
 
 class Win(Level):
+    """Наследованный от класса Level. Экран победы."""
     def __init__(self, game):
         super().__init__(game)
 
@@ -216,6 +230,7 @@ class Win(Level):
 
 
 class FinalLevel(Level):
+    """Наследованный от класса Level. Уровень с боссом и скелетами."""
     def __init__(self, game):
         super().__init__(game)
         self.can_pause = True
@@ -241,7 +256,7 @@ class FinalLevel(Level):
                                                   self.game)]
         spawn_coords = list(self.game.world.conj_dict.keys())
         coords = sample(self.game.world.notes_spawn, 3)
-        spawn_aid_kit(self.game, coords)
+        self.spawn_aid_kit(coords)
         for i in sample(spawn_coords, 20):
             self.game.sprites.objects_list.append(
                 Skeleton(self.game.sprites.sprite_parametrs['sprite_skeleton'], (i[0] + 0.5, i[1] + 0.5), self.game))
@@ -276,6 +291,7 @@ class FinalLevel(Level):
 
 
 class PlanetLevel(Level):
+    """Наследованный от класса Level. Уровень со скелетами."""
     def __init__(self, game):
         super().__init__(game)
         self.can_pause = True
@@ -298,7 +314,7 @@ class PlanetLevel(Level):
         self.game.sprites.objects_list.clear()
         spawn_coords = list(self.game.world.conj_dict.keys())
         coords = sample(self.game.world.notes_spawn, 3)
-        spawn_aid_kit(self.game, coords)
+        self.spawn_aid_kit(coords)
         for i in sample(spawn_coords, 30):
             self.game.sprites.objects_list.append(
                 Skeleton(self.game.sprites.sprite_parametrs['sprite_skeleton'], (i[0] + 0.5, i[1] + 0.5), self.game))
@@ -339,6 +355,7 @@ class PlanetLevel(Level):
 
 
 class Labirint(Level):
+    """Наследованный от класса Level. Уровень с боссом и лабиринтом."""
     def __init__(self, game):
         super().__init__(game)
         self.can_pause = True
@@ -376,7 +393,7 @@ class Labirint(Level):
                      f"data/sprites/note/icons/{i + 1}.png").convert_alpha(),
                           pygame.image.load(
                               f"data/sprites/note/icons/{i + 1}_unfound.png").convert_alpha())))
-        spawn_aid_kit(self.game, coords[::-1])
+        self.spawn_aid_kit(coords[::-1])
         self.game.labirint_interface.update_notes_list()
 
     def update(self):
@@ -396,10 +413,3 @@ class Labirint(Level):
         self.game.tips_interface.render()
         if self.game.pause:
             self.game.pause_interface.render()
-
-
-def spawn_aid_kit(game, coords):
-    for i in range(3):
-        game.sprites.objects_list.append(
-            AidKit(game.sprites.sprite_parametrs['sprite_aid'],
-                 (coords[i][0] + 0.98, coords[i][1] + 0.5)))
