@@ -1,10 +1,11 @@
 import math
 import pygame
+import ctypes
 
 # screen settings
 # SIZE = WIDTH, HEIGHT = win32api.GetSystemMetrics(0), win32api.GetSystemMetrics(1)
 
-SIZE = WIDTH, HEIGHT = 1920, 1080
+SIZE = WIDTH, HEIGHT = ctypes.windll.user32.GetSystemMetrics(0), ctypes.windll.user32.GetSystemMetrics(1)
 HALF_WIDTH = WIDTH // 2
 HALF_HEIGHT = HEIGHT // 2
 PENTA_HEIGHT = 5 * HEIGHT
