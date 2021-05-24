@@ -94,7 +94,7 @@ class MenuInterface:
         self.exit_button.draw()
 
         # Лого
-        label = self.game.font.render('Evill Stuff', 1, MENU_TITLE_COLOR)
+        label = self.game.font.render('Evil Stuff', 1, MENU_TITLE_COLOR)
         self.game.screen.blit(label, (
             WIDTH // 2 - label.get_width() // 2, HEIGHT // 2 - 200))
         
@@ -154,11 +154,13 @@ class LabirintInterface:
         self.update_notes_list()
 
     def update_notes_list(self):
+        count = 0
         for i in range(len(self.game.sprites.objects_list)):
             sprite = self.game.sprites.objects_list[
                 len(self.game.sprites.objects_list) - i - 1]
             if sprite.flag == 'note':
-                sprite.noteIcon.move((WIDTH - 70) - i * 50, 10)
+                sprite.noteIcon.move((WIDTH - 70) - count * 50, 10)
+                count += 1
 
     def render(self):
         noteicons_group.draw(self.game.screen)

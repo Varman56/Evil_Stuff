@@ -293,6 +293,7 @@ class Note(SpriteObject):
         self.title = title
 
         self.noteIcon = note_icon
+        self.capture_sound = pygame.mixer.Sound('data/sprites/note/sounds/note.mp3')
 
         if self.viewing_angles:
             self.sprite_angles = [frozenset(range(325, 361)) | frozenset(

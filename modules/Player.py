@@ -81,10 +81,12 @@ class Player:
     def on_player_collision_entered(self, hit_sprites):
         for rect, sprite in hit_sprites:
             if self.rect.colliderect(rect):
-                if sprite.flag == "note":
+                if sprite.hidden:
+                    continue
+                if sprite.flag == "note" :
                     sprite.noteIcon.set_founded()
                     sprite.hidden = True
-
+                    sprite.capture_sound.play()
                     all_notes_founded = True
                     for _sprite in self.game.sprites.objects_list:
                         if _sprite.flag == "note":
@@ -93,10 +95,10 @@ class Player:
                     if all_notes_founded:
                         self.game.drawer.textures[3] = self.game.drawer.door_images[1]
                         self.game.portal_open = True
-                if sprite.flag == "aid" and not sprite.hidden:
+                if sprite.flag == "aid":
                     self.set_health(self.health + 20)
                     sprite.hidden = True
-                    sprite.capture_sound.play()
+                sprite.capture_sound.play()
 
     def set_health(self, health):
         self.health = check_value(health)
