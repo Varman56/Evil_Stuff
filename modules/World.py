@@ -5,12 +5,14 @@ from numba import int32
 
 
 class World:
+    """Класс, обрабатывающий информацию об уровне."""
     def __init__(self, path):
         self.path = path
         self.conj_dict, self.world_map, self.collision_objects, self.mini_map, self.notes_spawn, self.WORLD_WIDTH, self.WORLD_HEIGHT = self.load_map(
             self.path)
 
     def load_map(self, path):
+        """Загрузка карты, позиций спрайтов и стен, необходимой информации."""
         with open(path, encoding='utf-8', mode='r') as f:
             level = list(f.readlines())
             level = [list(map(int, list(i.strip('\n')))) for i in level]
@@ -37,9 +39,11 @@ class World:
         return conj_dict, world_map, collision_objects, mini_map, notes_spawn, width, height
 
     def check_coords(self, x, y, width, height):
+        """Проверка корректности координат."""
         return width > x > -1 and height > y > -1
 
     def find_new_nodes(self, x, y, matrix_map, width, height):
+        """Поиск новых точек для словаря связей (Ускорение работы поиска в ширину)."""
         points = [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
         good_points = []
         for i in range(4):

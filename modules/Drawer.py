@@ -190,7 +190,7 @@ def ray_casting_walls(player, textures, world):
 
 @njit(fastmath=True, cache=True)
 def ray_casting_npc_player(npc_x, npc_y, _world_map, player_pos):
-    """Проверка непосредсвтенной видимости NPC и игрока"""
+    """Проверка непосредсвтенной видимости NPC и игрока."""
     ox, oy = player_pos
     xm, ym = mapping(ox, oy)
     delta_x, delta_y = ox - npc_x, oy - npc_y

@@ -281,7 +281,6 @@ class FinalLevel(Level):
             pygame.event.clear()
             self.game.set_level(self.game.win_level)
             return
-        # self.game.drawer.fps(self.game.clock)
         self.game.levels_interface.render()
         self.game.player_interface.render()
         self.game.tips_interface.render()
@@ -340,16 +339,12 @@ class PlanetLevel(Level):
         if not check:
             self.game.set_level(self.game.final_level)
             return
-        # self.game.drawer.fps(self.game.clock)
         self.game.levels_interface.render()
         self.game.player_interface.render()
         self.game.player.weapon.render([wall_shot, self.game.sprites.sprite_shot])
         self.game.tips_interface.render()
         if self.game.pause:
             self.game.pause_interface.render()
-        # print([i.is_dead for i in self.game.sprites.objects_list])
-        # print(self.game.sprites.objects_list)
-        # print(len(self.game.sprites.objects_list))
         if all([i.is_dead for i in self.game.sprites.objects_list]):
             self.game.set_level(self.game.final_level)
 
@@ -377,7 +372,6 @@ class Labirint(Level):
         pygame.mouse.set_visible(False)
         pygame.mixer.music.load('data/music/gameplay_music.mp3')
         pygame.mixer.music.play(-1)
-        # self.game.sprites.note_coords = sample(self.game.world.notes_spawn, 11)
         coords = sample(self.game.world.notes_spawn, 11)
         self.game.sprites.objects_list = []
         self.game.sprites.objects_list.append(Slender(self.game.sprites.sprite_parametrs['sprite_slender'], (58.5, 38.5), self.game))
@@ -406,8 +400,6 @@ class Labirint(Level):
         self.game.drawer.background(self.game.player.ang)
         walls, wall_shot = ray_casting_walls(self.game.player, self.game.drawer.textures, self.game.world)
         self.game.drawer.world(walls + [obj.object_locate(self.game.player) for obj in self.game.sprites.objects_list])
-        # self.game.drawer.mini_map(self.game.player, self.game.sprites)
-        # self.game.drawer.fps(self.game.clock)
         self.game.labirint_interface.render()
         self.game.drawer.interface(self.game.player)
         self.game.tips_interface.render()
